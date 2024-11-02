@@ -114,72 +114,144 @@ persona.decirEdad = function () {
   return `Tengo ${this.edad} de edad`;
 };
 
+const { rejects } = require('assert');
 /* console.log(persona);
 console.log(persona.decirEdad());
  */
 /* ------------------------------- Dificultad extra --------------------------------------- */
 
 const readline = require('readline');
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-let contacts = [
-  { nombre: 'Nahuel', telefono: 3885838669 },
-  { nombre: 'José', telefono: 15478946 },
+//Array para la agenda
+let contactos = [
+  { nombre: 'Nahuel', telefono: 123456 },
+  { nombre: 'Iván', telefono: 1234567 },
+  { nombre: 'Albarado', telefono: 12345 },
 ];
-const agendOfContact = () => {
-  const viewUsers = () => {
-    contacts.forEach((elem) => {
-      console.log(`Contacto ${elem.nombre} - Telefono: ${elem.telefono}`);
-    });
-  };
-  const createUser = () => {
-    rl.question('Ingrese su nombre: ', (name) => {
-      rl.question('Ingrese su número: ', (cellPhone) => {
-        contacts.push({ name, cellPhone });
-        console.log('Contacto creado!!');
 
-        rl.setPrompt(
-          '¿Que acción deseas realizar? \n 1-Ver Contactos \n 2-Crear Contacto \n 3-Editar Contacto \n 4-Eliminar Contacto \n',
-        );
-        rl.prompt();
-      });
-    });
-  };
-  const editUser = () => {
-    console.log('Accediste a 3');
-  };
-  const deleteUser = () => {
-    console.log('Accediste a 4');
-  };
-
-  //Solicitar la funcionalidad a realizar
+//Creación de la Aplicación de consola
+const iniciarApp = () => {
   rl.setPrompt(
-    'Bienvenidos a la agenda de contactos :) \n ¿Que acción deseas realizar? \n 1-Ver Contactos \n 2-Crear Contacto \n 3-Editar Contacto \n 4-Eliminar Contacto \n',
+    'Bienvenido a la Agenda ¿Qué acción deseas realizar?: \n 1. Ver agenda\n 2. Crear contacto\n 3. Editar contacto\n 4. Eliminar contacto\n Presiona "CTRL + C" para salir de la app',
   );
   rl.prompt();
+};
+iniciarApp();
 
-  rl.on('line', (input) => {
-    switch (parseInt(input)) {
-      case 1:
-        viewUsers();
-        break;
-      case 2:
-        createUser();
-        break;
-      case 3:
-        editUser();
-        break;
-      case 4:
-        deleteUser();
-        break;
-      default:
-        console.log('Comando no existente :(');
-        break;
+rl.on('line', (input) => {
+  switch (parseInt(input)) {
+    case 1:
+      console.log(`Has escogido la opción: ${input}`);
+      console.log(contactos);
+      setTimeout(iniciarApp, 2000);
+      break;
+    case 2:
+      console.log(`Has escogido la opción: ${input}`);
+      addContacto();
+      break;
+    case 3:
+      console.log(`Has escogido la opción: ${input}`);
+      editContacto();
+      break;
+    case 4:
+      console.log(`Has escogido la opción: ${input}`);
+      destroyContacto();
+      break;
+    default:
+      console.log(`Esa opción NO EXISTE. Por favor ingresar una correcta`);
+      setTimeout(iniciarApp, 2000);
+      break;
+  }
+});
+
+/* ---Función para añadir un contacto nuevo--- */
+const addContacto = () => {
+  const data = (question) =>
+    new Promise((resolve) => rl.question(question, resolve));
+
+  const create = async () => {
+    let contactoNuevo = {};
+
+    contactoNuevo.nombre = await data('Ingrese el nombre: ');
+    let telefono = await data('Ingrese el teléfono: ');
+    if (telefono.length >= 11 || isNaN(parseInt(telefono)) === true) {
+      console.log(
+        'El número de telefono tiene que ser menos de 11 digitos y un dato númerico',
+      );
+      setTimeout(iniciarApp, 2000);
+    } else {
+      contactoNuevo.telefono = parseInt(telefono);
+
+      contactos.push(contactoNuevo);
+
+      console.log('Has creado un contacto nuevo');
+      setTimeout(iniciarApp, 2000);
     }
-  });
+  };
+  create();
 };
 
-agendOfContact();
+/* ---Función para editar un contacto ya existente--- */
+const editContacto = () => {
+  const data = (question) =>
+    new Promise((resolve) => rl.question(question, resolve));
+  /* Usaré el metedo array "Splice" para reemplazar el contacto existente pero primero
+  debo identificar el indice del elemento para poder reemplazarlo usaré "findIndex" */
+  const edit = async () => {
+    let nameContact = await data('Colocar el nombre del contacto a editar: ');
+    let indexContact = contactos.findIndex((elem) => {
+      return elem.nombre == nameContact;
+    });
+
+    if (indexContact != -1) {
+      let contactoEditado = {};
+
+      contactoEditado.nombre = await data('Editar Nombre: ');
+      let telefono = await data('Editar Número: ');
+      contactoEditado.telefono = parseInt(telefono);
+      if (telefono.length >= 11 || isNaN(parseInt(telefono)) === true) {
+        console.log(
+          'El número de telefono tiene que ser menos de 11 digitos y un dato númerico',
+        );
+        setTimeout(iniciarApp, 2000);
+      } else {
+        contactoEditado.telefono = parseInt(telefono);
+
+        contactos.splice(indexContact, 1, contactoEditado);
+        console.log('Se ha editado correctamente el contacto');
+        setTimeout(iniciarApp, 2000);
+      }
+    } else {
+      console.log('Ese contacto no existe');
+      setTimeout(iniciarApp, 2000);
+    }
+  };
+  edit();
+};
+
+const destroyContacto = () => {
+  const data = (question) =>
+    new Promise((resolve) => rl.question(question, resolve));
+
+  const destroy = async () => {
+    let nameContact = await data('Ingresar el nombre del contacto a eliminar: ');
+    let indexContact = contactos.findIndex((elem) => {
+      return elem.nombre == nameContact;
+    });
+
+    if (indexContact != -1) {
+      contactos.splice(indexContact, 1);
+      console.log('Se ha eliminado correctamente el contacto');
+      setTimeout(iniciarApp, 2000);
+    } else {
+      console.log('Ese contacto no existe');
+      setTimeout(iniciarApp, 2000);
+    }
+  };
+  destroy();
+};
